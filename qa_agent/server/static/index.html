@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QA AI Agent - Autonomous Polyglot Test Engineer</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            500: '#10b981',
+                            600: '#059669',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body class="bg-zinc-950 text-zinc-100 min-h-screen flex flex-col font-sans antialiased selection:bg-emerald-500 selection:text-white">
+
+    <!-- Top Navigation Bar -->
+    <header class="border-b border-zinc-800/80 bg-zinc-900/60 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                    <i data-lucide="shield-check" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <span class="font-bold text-lg tracking-tight text-white flex items-center gap-2">
+                        QA AI Agent
+                        <span class="text-xs px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">v1.0 Polyglot</span>
+                    </span>
+                    <p class="text-xs text-zinc-400">Autonomous Test Generation & Execution</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <!-- API Key Config Button -->
+                <button id="btnSettings" class="px-3 py-1.5 rounded-lg border border-zinc-700 bg-zinc-800/60 hover:bg-zinc-800 text-xs font-medium text-zinc-300 flex items-center gap-1.5 transition">
+                    <i data-lucide="key" class="w-3.5 h-3.5 text-amber-400"></i>
+                    <span id="apiKeyStatusText">API Key Config</span>
+                </button>
+                <div class="h-4 w-px bg-zinc-800"></div>
+                <div class="flex items-center gap-2 text-xs text-zinc-400">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span>Ready</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+
+        <!-- Progress Tracker -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between max-w-3xl mx-auto">
+                <div class="flex items-center gap-2" id="stepIndicator1">
+                    <span class="w-7 h-7 rounded-full bg-emerald-500 text-zinc-950 font-bold text-xs flex items-center justify-center">1</span>
+                    <span class="text-sm font-medium text-emerald-400">Ingest</span>
+                </div>
+                <div class="h-0.5 w-16 sm:w-24 bg-zinc-800" id="stepLine1"></div>
+                <div class="flex items-center gap-2" id="stepIndicator2">
+                    <span class="w-7 h-7 rounded-full bg-zinc-800 text-zinc-400 font-bold text-xs flex items-center justify-center">2</span>
+                    <span class="text-sm font-medium text-zinc-400">Profile</span>
+                </div>
+                <div class="h-0.5 w-16 sm:w-24 bg-zinc-800" id="stepLine2"></div>
+                <div class="flex items-center gap-2" id="stepIndicator3">
+                    <span class="w-7 h-7 rounded-full bg-zinc-800 text-zinc-400 font-bold text-xs flex items-center justify-center">3</span>
+                    <span class="text-sm font-medium text-zinc-400">Generate</span>
+                </div>
+                <div class="h-0.5 w-16 sm:w-24 bg-zinc-800" id="stepLine3"></div>
+                <div class="flex items-center gap-2" id="stepIndicator4">
+                    <span class="w-7 h-7 rounded-full bg-zinc-800 text-zinc-400 font-bold text-xs flex items-center justify-center">4</span>
+                    <span class="text-sm font-medium text-zinc-400">Execute & Report</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 1: INGEST PROJECT -->
+        <section id="sectionIngest" class="max-w-3xl mx-auto">
+            <div class="p-8 rounded-2xl bg-zinc-900/50 border border-zinc-800 shadow-xl backdrop-blur">
+                <div class="text-center mb-6">
+                    <h2 class="text-xl font-bold text-white">Import Your Project</h2>
+                    <p class="text-sm text-zinc-400 mt-1">Upload a ZIP archive or specify a local workspace directory</p>
+                </div>
+
+                <!-- Tabs: ZIP Upload vs Local Folder -->
+                <div class="flex rounded-xl bg-zinc-950/80 p-1 mb-6 border border-zinc-800/80">
+                    <button id="tabZip" class="flex-1 py-2 rounded-lg text-xs font-semibold text-white bg-zinc-800/90 shadow transition">
+                        Upload Project ZIP
+                    </button>
+                    <button id="tabLocal" class="flex-1 py-2 rounded-lg text-xs font-semibold text-zinc-400 hover:text-zinc-200 transition">
+                        Local Folder Path
+                    </button>
+                </div>
+
+                <!-- ZIP Upload Zone -->
+                <div id="zoneZip" class="space-y-4">
+                    <div id="dropZone" class="border-2 border-dashed border-zinc-700 hover:border-emerald-500/60 rounded-xl p-8 text-center cursor-pointer transition bg-zinc-900/30">
+                        <input type="file" id="fileInput" accept=".zip" class="hidden">
+                        <div class="w-12 h-12 rounded-full bg-zinc-800/80 mx-auto flex items-center justify-center text-zinc-400 mb-3">
+                            <i data-lucide="upload-cloud" class="w-6 h-6 text-emerald-400"></i>
+                        </div>
+                        <p class="text-sm font-medium text-zinc-200">Click to upload or drag & drop project ZIP</p>
+                        <p class="text-xs text-zinc-500 mt-1">Supports Python, Node.js, Go, Java, Rust & more</p>
+                    </div>
+                </div>
+
+                <!-- Local Path Zone -->
+                <div id="zoneLocal" class="hidden space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-zinc-300 mb-2">Absolute or Relative Folder Path</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="inputLocalPath" placeholder="e.g. sample_projects/fastapi_calculator or C:/Projects/my_app" 
+                                   class="flex-1 rounded-lg border border-zinc-700 bg-zinc-950 px-3.5 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 font-mono text-xs">
+                            <button id="btnLoadLocal" class="px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 font-semibold text-xs text-white transition flex items-center gap-1.5">
+                                <i data-lucide="folder-search" class="w-4 h-4"></i>
+                                Load
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Samples -->
+                <div class="mt-6 pt-5 border-t border-zinc-800/80 flex items-center justify-between text-xs">
+                    <span class="text-zinc-500">Quick Test Sample:</span>
+                    <button id="btnLoadSample" class="text-emerald-400 hover:text-emerald-300 font-medium flex items-center gap-1 transition">
+                        <i data-lucide="play" class="w-3 h-3"></i>
+                        Load Sample FastAPI Calculator
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- STEP 2: PROFILE & TEST PLANNING (Hidden until loaded) -->
+        <section id="sectionProfile" class="hidden space-y-6">
+            <!-- Project Header Card -->
+            <div class="p-6 rounded-2xl bg-zinc-900/60 border border-zinc-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <div class="flex items-center gap-3">
+                        <h2 id="profProjectName" class="text-2xl font-bold text-white tracking-tight">Project Name</h2>
+                        <span id="profPrimaryLang" class="px-2.5 py-1 text-xs font-semibold rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Python</span>
+                    </div>
+                    <p id="profPath" class="text-xs font-mono text-zinc-400 mt-1">/path/to/project</p>
+                </div>
+
+                <div class="flex flex-wrap gap-2 items-center" id="profFrameworkBadges">
+                    <!-- Badges injected here -->
+                </div>
+            </div>
+
+            <!-- Metrics & Insights Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl bg-zinc-900/40 border border-zinc-800">
+                    <div class="text-xs text-zinc-400 uppercase font-medium">Source Files</div>
+                    <div id="profFileCount" class="text-2xl font-bold text-white mt-1">0</div>
+                </div>
+                <div class="p-4 rounded-xl bg-zinc-900/40 border border-zinc-800">
+                    <div class="text-xs text-zinc-400 uppercase font-medium">Total Lines</div>
+                    <div id="profLineCount" class="text-2xl font-bold text-white mt-1">0</div>
+                </div>
+                <div class="p-4 rounded-xl bg-zinc-900/40 border border-zinc-800">
+                    <div class="text-xs text-zinc-400 uppercase font-medium">API Endpoints</div>
+                    <div id="profEndpointCount" class="text-2xl font-bold text-emerald-400 mt-1">0</div>
+                </div>
+                <div class="p-4 rounded-xl bg-zinc-900/40 border border-zinc-800">
+                    <div class="text-xs text-zinc-400 uppercase font-medium">Key Functions</div>
+                    <div id="profFunctionCount" class="text-2xl font-bold text-indigo-400 mt-1">0</div>
+                </div>
+            </div>
+
+            <!-- Test Generation Configuration Box -->
+            <div class="p-6 rounded-2xl bg-zinc-900/60 border border-zinc-800">
+                <h3 class="text-base font-semibold text-white mb-4 flex items-center gap-2">
+                    <i data-lucide="settings-2" class="w-4 h-4 text-emerald-400"></i>
+                    Configure Test Suite Generation
+                </h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <!-- Unit Tests Toggle -->
+                    <label class="p-4 rounded-xl border border-zinc-800 bg-zinc-950/40 hover:border-zinc-700 cursor-pointer flex items-start gap-3 transition">
+                        <input type="checkbox" id="checkUnit" checked class="mt-1 accent-emerald-500 rounded">
+                        <div>
+                            <div class="text-sm font-semibold text-zinc-200">Unit Tests</div>
+                            <div class="text-xs text-zinc-400 mt-0.5">Edge cases, utilities, classes, boundary inputs</div>
+                        </div>
+                    </label>
+
+                    <!-- API Tests Toggle -->
+                    <label class="p-4 rounded-xl border border-zinc-800 bg-zinc-950/40 hover:border-zinc-700 cursor-pointer flex items-start gap-3 transition">
+                        <input type="checkbox" id="checkApi" checked class="mt-1 accent-emerald-500 rounded">
+                        <div>
+                            <div class="text-sm font-semibold text-zinc-200">API / Integration Tests</div>
+                            <div class="text-xs text-zinc-400 mt-0.5">Route handlers, status codes, payload validation</div>
+                        </div>
+                    </label>
+
+                    <!-- E2E Tests Toggle -->
+                    <label class="p-4 rounded-xl border border-zinc-800 bg-zinc-950/40 hover:border-zinc-700 cursor-pointer flex items-start gap-3 transition">
+                        <input type="checkbox" id="checkE2e" checked class="mt-1 accent-emerald-500 rounded">
+                        <div>
+                            <div class="text-sm font-semibold text-zinc-200">End-to-End Tests</div>
+                            <div class="text-xs text-zinc-400 mt-0.5">Complete user flow & multi-step journeys</div>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-zinc-800">
+                    <div class="text-xs text-zinc-400 flex items-center gap-2">
+                        <i data-lucide="cpu" class="w-4 h-4 text-emerald-400"></i>
+                        Target Folder: <code class="font-mono text-zinc-200 bg-zinc-800 px-2 py-0.5 rounded">tests/qa_agent/</code>
+                    </div>
+
+                    <button id="btnGenerateTests" class="w-full sm:w-auto px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 font-semibold text-sm text-white flex items-center justify-center gap-2 shadow-lg shadow-emerald-950/40 transition">
+                        <i data-lucide="sparkles" class="w-4 h-4"></i>
+                        Generate Test Suites
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- STEP 3: GENERATED TESTS & ACTION HUB -->
+        <section id="sectionGenerated" class="hidden space-y-6">
+            <div class="p-6 rounded-2xl bg-zinc-900/60 border border-zinc-800">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-zinc-800">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                            <h3 class="text-lg font-bold text-white">Test Suites Generated Successfully</h3>
+                        </div>
+                        <p class="text-xs text-zinc-400 mt-1">Generated inside <span class="font-mono text-zinc-300">tests/qa_agent/</span> within your project</p>
+                    </div>
+
+                    <!-- TWO MAIN ACTION BUTTONS AS REQUESTED -->
+                    <div class="flex flex-wrap gap-3">
+                        <!-- 1. Download Project with Tests -->
+                        <button id="btnDownloadZip" class="px-5 py-2.5 rounded-xl border border-zinc-700 bg-zinc-800 hover:bg-zinc-700/80 font-semibold text-xs text-white flex items-center gap-2 transition">
+                            <i data-lucide="download" class="w-4 h-4 text-emerald-400"></i>
+                            Download Project with Tests (.ZIP)
+                        </button>
+
+                        <!-- 2. Run Tests Automatically -->
+                        <button id="btnExecuteTests" class="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 font-semibold text-xs text-white flex items-center gap-2 shadow-lg shadow-emerald-950/40 transition">
+                            <i data-lucide="play" class="w-4 h-4"></i>
+                            Run Tests Automatically
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Generated File List -->
+                <div class="mt-6">
+                    <h4 class="text-xs font-semibold uppercase text-zinc-400 mb-3 tracking-wider">Generated Test Scripts</h4>
+                    <div id="generatedFilesList" class="space-y-2">
+                        <!-- Injected dynamically -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- STEP 4: LIVE EXECUTION CONSOLE & RESULTS -->
+        <section id="sectionExecution" class="hidden space-y-6">
+            <!-- Results Summary Cards -->
+            <div id="resultsSummary" class="hidden grid grid-cols-2 sm:grid-cols-5 gap-4">
+                <div class="p-4 rounded-xl bg-zinc-900/50 border border-zinc-800">
+                    <div class="text-xs text-zinc-400 uppercase font-medium">Total Run</div>
+                    <div id="resTotal" class="text-2xl font-bold text-white mt-1">0</div>
+                </div>
+                <div class="p-4 rounded-xl bg-zinc-900/50 border border-zinc-800">
+                    <div class="text-xs text-emerald-400 uppercase font-medium">Passed</div>
+                    <div id="resPassed" class="text-2xl font-bold text-emerald-400 mt-1">0</div>
+                </div>
+                <div class="p-4 rounded-xl bg-zinc-900/50 border border-zinc-800">
+                    <div class="text-xs text-rose-400 uppercase font-medium">Failed</div>
+                    <div id="resFailed" class="text-2xl font-bold text-rose-400 mt-1">0</div>
+                </div>
+                <div class="p-4 rounded-xl bg-zinc-900/50 border border-zinc-800">
+                    <div class="text-xs text-amber-400 uppercase font-medium">Skipped</div>
+                    <div id="resSkipped" class="text-2xl font-bold text-amber-400 mt-1">0</div>
+                </div>
+                <div class="p-4 rounded-xl bg-zinc-900/50 border border-zinc-800">
+                    <div class="text-xs text-indigo-400 uppercase font-medium">Duration</div>
+                    <div id="resDuration" class="text-2xl font-bold text-indigo-400 mt-1">0.0s</div>
+                </div>
+            </div>
+
+            <!-- Report Download Hub -->
+            <div id="reportActions" class="hidden p-4 rounded-xl bg-zinc-900/80 border border-zinc-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+                        <i data-lucide="file-check" class="w-4 h-4"></i>
+                    </div>
+                    <div>
+                        <div class="text-sm font-semibold text-white">Full QA Report Generated</div>
+                        <div class="text-xs text-zinc-400">Export detailed execution report for your team</div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <button id="btnDownloadHtmlReport" class="flex-1 sm:flex-initial px-4 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-xs font-semibold text-zinc-200 flex items-center justify-center gap-1.5 transition">
+                        <i data-lucide="file-text" class="w-3.5 h-3.5 text-emerald-400"></i>
+                        HTML Report
+                    </button>
+                    <button id="btnDownloadMdReport" class="flex-1 sm:flex-initial px-4 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-xs font-semibold text-zinc-200 flex items-center justify-center gap-1.5 transition">
+                        <i data-lucide="download" class="w-3.5 h-3.5 text-indigo-400"></i>
+                        Markdown Report
+                    </button>
+                </div>
+            </div>
+
+            <!-- Terminal Stream Window -->
+            <div class="rounded-2xl border border-zinc-800 bg-zinc-950 overflow-hidden shadow-2xl">
+                <div class="px-4 py-2.5 bg-zinc-900/80 border-b border-zinc-800 flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <div class="flex gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-rose-500/80"></span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-amber-500/80"></span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500/80"></span>
+                        </div>
+                        <span class="text-xs font-mono text-zinc-400 ml-2">sandbox-runner:~$ python -m pytest</span>
+                    </div>
+                    <div id="runnerSpinner" class="hidden flex items-center gap-2 text-xs text-emerald-400">
+                        <i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i>
+                        <span>Running tests...</span>
+                    </div>
+                </div>
+                <pre id="terminalOutput" class="p-4 font-mono text-xs text-zinc-300 h-80 overflow-y-auto leading-relaxed bg-zinc-950 whitespace-pre-wrap select-text"></pre>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Settings Modal (API Key) -->
+    <div id="modalSettings" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-md w-full p-6 shadow-2xl">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                    <i data-lucide="key" class="w-4 h-4 text-amber-400"></i>
+                    Gemini API Key Configuration
+                </h3>
+                <button id="btnCloseModal" class="text-zinc-500 hover:text-zinc-300">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <p class="text-xs text-zinc-400 mb-4">
+                Provide your Google Gemini API Key for deep AI test generation. (Leave blank to use built-in polyglot test templates).
+            </p>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-1">API Key</label>
+                    <input type="password" id="inputApiKey" placeholder="AIzaSy..." 
+                           class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-xs text-zinc-100 font-mono focus:outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-1">Model Selection</label>
+                    <select id="selectModel" class="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-xs text-zinc-100 focus:outline-none focus:border-emerald-500">
+                        <option value="gemini-2.5-flash">Gemini 2.5/3.8 Flash (Fast, Low Token Burn - Recommended)</option>
+                        <option value="gemini-2.5-pro">Gemini Pro (Deep Reasoning)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end gap-2">
+                <button id="btnSaveKey" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold text-white transition">
+                    Save Key
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
+

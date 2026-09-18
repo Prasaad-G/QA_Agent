@@ -1,0 +1,36 @@
+name: QA Agent CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  automated-qa:
+    name: Autonomous QA Test Suite
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Run QA AI Agent
+        uses: ./ # Points to action.yml in root, or username/QA_Agent@v1
+        with:
+          gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
+          test-types: 'unit,api,e2e'
+          post-pr-comment: 'true'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Test Report Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-agent-report
+          path: tests/qa_agent/qa_report.*
+

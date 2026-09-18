@@ -1,0 +1,83 @@
+name: 'QA AI Agent'
+description: 'Autonomous Polyglot QA AI Agent - Analyzes codebases, generates Unit/API/E2E tests, executes them, and posts PR reports'
+author: 'QA Agent Team'
+
+branding:
+  icon: 'shield-check'
+  color: 'green'
+
+inputs:
+  gemini-api-key:
+    description: 'Google Gemini API Key for AI test generation'
+    required: false
+    default: ''
+  target-path:
+    description: 'Path to the codebase to analyze and test'
+    required: false
+    default: '.'
+  test-types:
+    description: 'Comma-separated test types to generate (unit,api,e2e)'
+    required: false
+    default: 'unit,api,e2e'
+  model-name:
+    description: 'Gemini model to use'
+    required: false
+    default: 'gemini-2.5-flash'
+  post-pr-comment:
+    description: 'Whether to post the test report as a comment on Pull Requests'
+    required: false
+    default: 'true'
+  fail-on-error:
+    description: 'Whether to fail the CI step if tests fail'
+    required: false
+    default: 'true'
+  github-token:
+    description: 'GitHub token for posting PR comments'
+    required: false
+    default: ${{ github.token }}
+
+outputs:
+  total:
+    description: 'Total number of tests executed'
+    value: ${{ steps.run-agent.outputs.total }}
+  passed:
+    description: 'Number of tests that passed'
+    value: ${{ steps.run-agent.outputs.passed }}
+  failed:
+    description: 'Number of tests that failed'
+    value: ${{ steps.run-agent.outputs.failed }}
+  success:
+    description: 'Whether all tests passed'
+    value: ${{ steps.run-agent.outputs.success }}
+  report-path:
+    description: 'Path to generated markdown report'
+    value: ${{ steps.run-agent.outputs.report_path }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install QA Agent
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e "${{ github.action_path }}" || pip install .
+
+    - name: Run QA Agent CI
+      id: run-agent
+      shell: bash
+      env:
+        INPUT_TARGET_PATH: ${{ inputs.target-path }}
+        INPUT_GEMINI_API_KEY: ${{ inputs.gemini-api-key }}
+        INPUT_TEST_TYPES: ${{ inputs.test-types }}
+        INPUT_MODEL_NAME: ${{ inputs.model-name }}
+        INPUT_POST_PR_COMMENT: ${{ inputs.post-pr-comment }}
+        INPUT_FAIL_ON_ERROR: ${{ inputs.fail-on-error }}
+        INPUT_GITHUB_TOKEN: ${{ inputs.github-token }}
+      run: |
+        python -m qa_agent.integrations.github_action
+

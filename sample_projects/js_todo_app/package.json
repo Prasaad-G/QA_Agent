@@ -1,0 +1,16 @@
+{
+  "name": "js-todo-app",
+  "version": "1.0.0",
+  "description": "Sample Todo app for QA Agent polyglot testing",
+  "main": "server.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}
+

@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "qa-agent-ai"
+version = "1.0.0"
+description = "Autonomous Polyglot QA AI Agent - Generate, execute and report multi-tier test suites for any codebase"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+    { name = "QA Agent Team" }
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Software Development :: Testing",
+    "Topic :: Software Development :: Quality Assurance",
+]
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn>=0.30.0",
+    "pydantic>=2.8.0",
+    "python-multipart>=0.0.9",
+    "aiofiles>=24.1.0",
+    "google-genai>=0.1.0",
+    "pytest>=8.0.0",
+    "requests>=2.31.0",
+    "rich>=13.7.0",
+    "python-dotenv>=1.0.0",
+]
+
+[project.scripts]
+qa-agent = "qa_agent.cli.main:run_cli"
+qa-agent-ui = "main:main"
+
+[tool.setuptools.packages.find]
+include = ["qa_agent*"]
+
+[tool.setuptools.package-data]
+"qa_agent.server" = ["static/*", "static/**/*"]
+

@@ -1,0 +1,59 @@
+# Python bytecode & caches
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# Pip packaging artifacts
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+
+# Environment variables (NEVER commit API keys!)
+.env
+
+# pytest cache
+.pytest_cache/
+.mypy_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# QA Agent generated test output (these are generated per-project)
+tests/qa_agent/
+sample_projects/**/tests/qa_agent/
+
+# IDE settings
+.vscode/settings.json
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# PyInstaller build output
+dist/
+build/
+
+# Docker local data
+*.pid
+
+# Node (for sample JS project)
+node_modules/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Logs
+*.log
+

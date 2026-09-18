@@ -1,0 +1,12 @@
+services:
+  qa-agent:
+    build: .
+    container_name: qa-ai-agent
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - HOST=0.0.0.0
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+    restart: unless-stopped
+
