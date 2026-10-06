@@ -98,6 +98,42 @@ class TestRunner:
         test_items, passed, failed, skipped, errors = self._parse_pytest_output(full_stdout)
         total = passed + failed + skipped + errors
 
+        # Trigger Autonomous Self-Healing Engine if failures exist
+        if (failed > 0 or errors > 0) and not getattr(self, "_is_healing_retry", False):
+            if log_callback:
+                log_callback("\n[Self-Healing Engine] Failures detected. Diagnosing tracebacks and patching test files...")
+
+            initial_result = ExecutionResult(
+                success=False,
+                total_tests=total,
+                passed=passed,
+                failed=failed,
+                skipped=skipped,
+                errors=errors,
+                duration_seconds=duration,
+                command_executed=" ".join(command),
+                exit_code=exit_code,
+                stdout=full_stdout,
+                stderr=full_stderr,
+                test_items=test_items,
+            )
+
+            from qa_agent.core.self_healing import SelfHealingEngine
+            healer = SelfHealingEngine(self.project_root)
+            was_healed, count, details = healer.heal_failed_tests(initial_result)
+
+            if was_healed:
+                if log_callback:
+                    for d in details:
+                        log_callback(f"[Self-Healing Engine] {d}")
+                    log_callback("[Self-Healing Engine] Re-executing test suite after self-healing patches...\n")
+
+                self._is_healing_retry = True
+                try:
+                    return self.run_tests(test_path=test_path, timeout_seconds=timeout_seconds, log_callback=log_callback)
+                finally:
+                    self._is_healing_retry = False
+
         # If pytest didn't report exact numbers (e.g. execution error)
         if total == 0 and exit_code == 0:
             passed = 1

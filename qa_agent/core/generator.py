@@ -78,25 +78,10 @@ class TestGenerator:
 
         if "python" in lang:
             conftest_path = output_dir / "conftest.py"
-            conftest_content = '''"""Root pytest configuration for QA Agent generated tests.
-Automatically configures sys.path so the target project can be imported cleanly.
-"""
+            from qa_agent.core.mock_engine import MockEngine
+            mock_eng = MockEngine(self.project_root)
+            conftest_content = mock_eng.generate_conftest_code()
 
-import sys
-from pathlib import Path
-import pytest
-
-# Ensure the root project folder is on sys.path
-PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
-
-
-@pytest.fixture(scope="session")
-def project_root():
-    """Provides the absolute path to the project root directory."""
-    return PROJECT_ROOT
-'''
             conftest_path.write_text(conftest_content, encoding="utf-8")
             files.append(
                 GeneratedTestFile(
