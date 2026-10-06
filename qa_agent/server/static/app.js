@@ -290,6 +290,24 @@ function renderProfile(profile) {
     lucide.createIcons();
 }
 
+async function fetchJsonSafely(url, options = {}) {
+    const res = await fetch(url, options);
+    const contentType = res.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+        const data = await res.json();
+        if (!res.ok) {
+            throw new Error(data.detail || data.message || `Server error (${res.status})`);
+        }
+        return data;
+    } else {
+        const text = await res.text();
+        if (res.status === 504 || res.status === 502) {
+            throw new Error(`Server request timed out (${res.status}). The project is very large.`);
+        }
+        throw new Error(`Server error (${res.status}): ${text.substring(0, 100)}`);
+    }
+}
+
 // Test Generation
 async function triggerTestGeneration() {
     setStep(3);
@@ -312,14 +330,14 @@ async function triggerTestGeneration() {
 
     try {
         // 1. Plan tests
-        await fetch(`/api/projects/${state.projectId}/plan`, {
+        await fetchJsonSafely(`/api/projects/${state.projectId}/plan`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ test_types: testTypes }),
         });
 
         // 2. Generate tests
-        const genRes = await fetch(`/api/projects/${state.projectId}/generate`, {
+        const genData = await fetchJsonSafely(`/api/projects/${state.projectId}/generate`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -327,9 +345,6 @@ async function triggerTestGeneration() {
                 model_name: state.modelName,
             }),
         });
-
-        const genData = await genRes.json();
-        if (!genRes.ok) throw new Error(genData.detail || 'Test generation failed');
 
         renderGeneratedFiles(genData.files);
 

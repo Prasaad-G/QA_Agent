@@ -92,7 +92,11 @@ class TestPlanner:
         for fn in self.profile.functions:
             functions_by_file.setdefault(fn.file_path, []).append(fn)
 
-        for file_path, fns in functions_by_file.items():
+        # Cap unit suites for large projects to ensure fast HTTP response times
+        MAX_UNIT_SUITES = 20
+        sorted_files = sorted(functions_by_file.items(), key=lambda item: len(item[1]), reverse=True)[:MAX_UNIT_SUITES]
+
+        for file_path, fns in sorted_files:
             fn_names = [fn.name for fn in fns[:6]]  # Take top functions per file
             cases = [
                 f"Test happy path execution with valid arguments for {name}"
@@ -144,7 +148,11 @@ class TestPlanner:
                 prefix = ep.path.strip("/").split("/")[0] if ep.path.strip("/") else "root"
                 grouped_endpoints.setdefault(prefix, []).append(ep)
 
-            for prefix, eps in grouped_endpoints.items():
+            # Cap API suites to top 15 route groups for large projects
+            MAX_API_SUITES = 15
+            sorted_groups = list(grouped_endpoints.items())[:MAX_API_SUITES]
+
+            for prefix, eps in sorted_groups:
                 endpoints_desc = ", ".join([f"{ep.method} {ep.path}" for ep in eps[:5]])
                 cases = []
                 for ep in eps[:5]:
